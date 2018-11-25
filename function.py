@@ -1,4 +1,5 @@
 #-*- coding=utf-8 -*-
+from __future__ import print_function
 import json
 import requests
 import collections
@@ -109,14 +110,14 @@ def GetToken(Token_file='token.json',user='A'):
         token=open_json(token_path)
         try:
             if time.time()>float(token.get('expires_on')):
-                print 'token timeout'
+                print('token timeout')
                 refresh_token=token.get('refresh_token')
                 token=ReFreshToken(refresh_token,user)
                 if token.get('access_token'):
                     with open(token_path,'w') as f:
                         json.dump(token,f,ensure_ascii=False)
                 else:
-                    print token
+                    print(token)
         except:
             with open(os.path.join(data_dir,'{}_Atoken.json'.format(user)),'r') as f:
                 Atoken=json.load(f)
@@ -266,7 +267,7 @@ class GetItemThread(Thread):
             self.share_path=sp
 
     def run(self):
-        while 1:
+        while True:
             time.sleep(0.5) #避免过快
             info=self.queue.get()
             url=info['url']
@@ -531,7 +532,7 @@ def _upload(filepath,remote_path,user='A'): #remote_path like 'share/share.mp4'
     r=requests.put(url,headers=headers,data=open(filepath,'rb'))
     data=json.loads(r.content)
     trytime=1
-    while 1:
+    while True:
         try:
             if data.get('error'):
                 print(data.get('error').get('message'))
@@ -709,7 +710,7 @@ def UploadSession(uploadUrl, filepath,user):
     offset=0
     trytime=1
     filesize=_filesize(filepath)
-    while 1:
+    while True:
         result=_upload_part(uploadUrl, filepath, offset, length,trytime=trytime)
         code=result['code']
         #上传完成
@@ -777,7 +778,7 @@ def ContinueUpload(filepath,uploadUrl,user):
         length=327680*10
         trytime=1
         filesize=_filesize(filepath)
-        while 1:
+        while True:
             result=_upload_part(uploadUrl, filepath, offset, length,trytime=trytime)
             code=result['code']
             #上传完成
@@ -894,8 +895,8 @@ def UploadDir(local_dir,remote_dir,user,threads=5):
     for remote_path,file in check_file_list:
         if not cloud_files.get(base64.b64encode(remote_path)):
             queue.put((file,remote_path))
-    print "check_file_list {},cloud_files {},queue {}".format(len(check_file_list),len(cloud_files),queue.qsize())
-    print "start upload files 5s later"
+    print("check_file_list {},cloud_files {},queue {}".format(len(check_file_list),len(cloud_files),queue.qsize()))
+    print("start upload files 5s later")
     time.sleep(5)
     for i in range(min(threads,queue.qsize())):
         t=MultiUpload(queue,user)
@@ -1029,7 +1030,7 @@ def CheckTimeOut(fileid):
         start_time=time.time()
         for i in range(10000):
             r=requests.head(downloadUrl)
-            print '{}\'s gone, status:{}'.format(time.time()-start_time,r.status_code)
+            print('{}\'s gone, status:{}'.format(time.time()-start_time,r.status_code))
             if r.status_code==404:
                 break
 
@@ -1122,7 +1123,7 @@ def download_and_upload(url,remote_dir,user,gid=None):
         item['up_status']=u'待机'
         item['status']=1
         down_db.insert_one(item)
-    while 1:
+    while True:
         a=json.loads(p.tellStatus(gid))[0]["result"]
         if a.get('followedBy'):
             old_status={}
@@ -1211,10 +1212,10 @@ def upload_status(gid,idx,remote_dir,user):
         down_db.find_one_and_update({'_id':item['_id']},{'$set':new_value})
         return
     _upload_session=Upload_for_server(localpath,remote_path,user)
-    while 1:
+    while True:
         try:
             new_value={}
-            data=_upload_session.next()
+            data=next(_upload_session)
             msg=data['status']
             """
             partition upload success
@@ -1449,7 +1450,7 @@ def DBMethod(action,**kwargs):
             user=it['user']
             remote_dir=it['remote_dir']
             cmd=u'python {} download_and_upload "{}" "{}" {} {}'.format(os.path.join(config_dir,'function.py'),1,remote_dir,user,gid)
-            print cmd
+            print(cmd)
             subprocess.Popen(cmd,shell=True)
             result.append(info)
     elif action in ['unselected','selected']:

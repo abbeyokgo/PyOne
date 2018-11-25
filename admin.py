@@ -1,4 +1,5 @@
 #-*- coding=utf-8 -*-
+from __future__ import print_function
 import eventlet
 eventlet.monkey_patch()
 from flask import Blueprint,redirect,url_for,request,render_template,flash,session,jsonify,Response,make_response
@@ -23,7 +24,7 @@ def set(key,value,user='A'):
     allow_key=['title','downloadUrl_timeout','allow_site','password','client_secret','client_id','share_path','other_name','tj_code','ARIA2_HOST','ARIA2_PORT','ARIA2_SECRET','ARIA2_SCHEME']
     if key not in allow_key:
         return u'禁止修改'
-    print 'set {}:{}'.format(key,value)
+    print('set {}:{}'.format(key,value))
     config_path=os.path.join(config_dir,'config.py')
     with open(config_path,'r') as f:
         old_text=f.read()
@@ -214,7 +215,7 @@ def edit():
                 info['status']=0
                 info['msg']=data.get('error').get('message')
         except Exception as e:
-            print e
+            print(e)
             info['status']=0
             info['msg']='修改超时'
         return jsonify(info)
@@ -288,7 +289,7 @@ def server_to_one():
     filepath=urllib.unquote(os.path.join(local_dir,filename))
     _upload_session=Upload_for_server(filepath,remote_folder,user)
     def read_status():
-        while 1:
+        while True:
             try:
                 msg=_upload_session.next()['status']
                 yield "data:" + msg + "\n\n"
@@ -363,7 +364,7 @@ def delete():
     infos['delete']=0
     infos['fail']=0
     for id in ids:
-        print 'delete {}'.format(id)
+        print('delete {}'.format(id))
         file=items.find_one({'id':id})
         name=file['name']
         path=file['path'].replace(name,'')
