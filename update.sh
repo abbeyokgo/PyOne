@@ -54,7 +54,7 @@ update_config(){
     num=`cat config.py | grep "theme" | wc -l`
     if [ $num == 0 ]; then
         echo '' >> config.py
-        echo 'theme=""' >> config.py
+        echo 'theme="material"' >> config.py
     fi
 
 }
