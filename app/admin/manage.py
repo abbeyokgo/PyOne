@@ -1,6 +1,6 @@
 #-*- coding=utf-8 -*-
 from base_view import *
-
+import subprocess
 
 
 
@@ -172,20 +172,27 @@ def delete():
     for id in ids:
         InfoLogger().print_r('delete {}'.format(id))
         file=mon_db.items.find_one({'id':id})
-        name=file['name']
-        path=file['path'].replace(name,'')
-        if len(path.split('/'))>2 and path.split('/')[-1]=='':
-            path=path[:-1]
-        key='has_item$#$#$#$#{}$#$#$#$#{}'.format(path,name)
-        InfoLogger().print_r('delete key:{}'.format(key))
-        redis_client.delete(key)
-        kc='{}:content'.format(id)
-        redis_client.delete(kc)
-        status=DeleteRemoteFile(id,user)
-        if status:
-            infos['delete']+=1
+        if file is not None and file != False:
+            name=file['name']
+            path=file['path'].replace(name,'')
+            if len(path.split('/'))>2 and path.split('/')[-1]=='':
+                path=path[:-1]
+            key='has_item$#$#$#$#{}$#$#$#$#{}'.format(path,name)
+            InfoLogger().print_r('delete key:{}'.format(key))
+            redis_client.delete(key)
+            kc='{}:content'.format(id)
+            redis_client.delete(kc)
+            status=DeleteRemoteFile(id,user)
+            if status:
+                infos['delete']+=1
+            else:
+                infos['fail']+=1
         else:
             infos['fail']+=1
+    
+    cmd="python -u {} UpdateFile {}".format(os.path.join(config_dir,'function.py'),'new')
+    subprocess.Popen(cmd,shell=True)
+
     return jsonify(infos)
 
 
